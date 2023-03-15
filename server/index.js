@@ -66,11 +66,28 @@ io.on("connection", (socket) => {
   });
 
   socket.on("send_message", (data) => {
-    const { message, username, room, __createdtime__ } = data;
+    const { message, username, room, __createdTime__ } = data;
     console.log(data);
     io.in(room).emit("receive_message", data);
     saveMessage(data);
   });
+
+  socket.on('leave_room', (data) => {
+    const { username, room } = data;
+    socket.leave(room);
+    const __createdTime__ = Date.now();
+    // Remove user from memory
+    // allUsers = leaveRoom(socket.id, allUsers);
+    allUsers = allUsers.filter((user) => user.id != socket.id);
+    socket.to(room).emit('chatroom_users', allUsers);
+    socket.to(room).emit('receive_message', {
+      username: CHAT_BOT,
+      message: `${username} has left the chat`,
+      __createdTime__,
+    });
+    console.log(`${username} has left the chat`);
+  });
+
 });
 
 server.listen(4000, () => {
