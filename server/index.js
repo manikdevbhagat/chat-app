@@ -2,14 +2,61 @@ const express = require('express');
 const app = express();
 const http = require('http');
 const cors = require('cors');
+const { Server } = require("socket.io");
 
 app.use(cors()); // Add cors middleware
 
 const server = http.createServer(app);
 
-app.get("/", (req, res) => {
-    res.status(200).send("Hello World");
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:3000",
+        methods: ['GET', 'POST'],
+    }
 })
+
+const CHAT_BOT = "ChatBot";
+let allUsers = [];
+let chatRoomUsres = [];
+
+io.on('connection', socket => {
+    console.log(`User connected ${socket.id}`);
+
+    //Add a user to a room
+    socket.on("join_room", data => {
+        console.log(data);
+        const { username, room } = data;
+        allUsers.push({ id: socket.id, username, room });
+        socket.join(room);
+
+        let __createdTime__ = Date.now();
+
+        //Send a message to all users currently in the room
+        socket.to(room).emit("receive_message", {
+            message: `${username} has choined the chat room`,
+            username: CHAT_BOT,
+            __createdTime__,
+        });
+
+        //Send welcome message to the user that just joined
+        socket.emit("receive_message", {
+            message: `Welcome ${username}`,
+            username: CHAT_BOT,
+            __createdTime__,
+        });
+
+        //Send an array of all users in the room
+        chatRoomUsres = allUsers.filter(user => user.room === room);
+        socket.to(room).emit('chatroom_users', chatRoomUsres);
+        socket.emit('chatroom_users', chatRoomUsres);
+
+    });
+
+    socket.on("send_message", data=>{
+        // const { message, username, room, __createdtime__ } = data;
+        console.log(data);
+    })
+});
 
 server.listen(4000, () => {
     console.log('Server is running on port 4000');
