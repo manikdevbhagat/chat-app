@@ -6,7 +6,6 @@ const getMessages = async (room) => {
       .sort({ __createdTime__: 1 })
       .limit(50);
     if (messages) {
-      console.log(messages);
       return messages;
     }
   } catch (err) {
