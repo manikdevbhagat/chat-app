@@ -1,6 +1,6 @@
 import Message from "../models/messageModel.js";
 
-const getMessages = async (socket, room) => {
+const getMessages = async (room) => {
   try {
     const messages = await Message.find({ room: room })
       .sort({ __createdTime__: 1 })

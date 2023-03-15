@@ -6,6 +6,8 @@ import dotenv from "dotenv";
 import Message from "./models/messageModel.js";
 import connectDB from "./db.js";
 import saveMessage from "./services/saveMessage.js";
+import getMessages from "./services/getMessages.js";
+
 dotenv.config();
 connectDB();
 
@@ -56,6 +58,11 @@ io.on("connection", (socket) => {
     chatRoomUsres = allUsers.filter((user) => user.room === room);
     socket.to(room).emit("chatroom_users", chatRoomUsres);
     socket.emit("chatroom_users", chatRoomUsres);
+
+    //get message history
+    getMessages(room).then((messages)=>{
+      socket.emit("last_50_messages", messages);
+    });
   });
 
   socket.on("send_message", (data) => {
