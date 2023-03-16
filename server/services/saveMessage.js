@@ -4,11 +4,12 @@ const saveMessage = async (data) => {
   try {
     const message = await Message.create(data);
     if (message) {
-      console.log(message);
+      // console.log(message);
       return message;
     }
   } catch (err) {
-    console.log(err);
+    // console.log(err);
+    throw new Error(err);
   }
 };
 
